@@ -32,6 +32,7 @@ enum AirConditionerDisplayState {
 
 export class AirConditionerPlatformAccessory {
   private service: Service;
+  private humidityService: Service;
 
   private temperatureUnit: TemperatureUnit = TemperatureUnit.Celsius;
 
@@ -40,6 +41,7 @@ export class AirConditionerPlatformAccessory {
       'switch',
       'airConditionerMode',
       'thermostatCoolingSetpoint',
+      'relativeHumidityMeasurement',
     ];
 
   protected name: string;
@@ -61,7 +63,7 @@ export class AirConditionerPlatformAccessory {
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'Samsung')
       .setCharacteristic(this.platform.Characteristic.Model, 'WindFree')
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, '1.0.0');
+      .setCharacteristic(this.platform.Characteristic.SerialNumber, '1.0.1');
 
     this.service =
       this.accessory.getService(this.platform.Service.Thermostat) ||
@@ -129,6 +131,31 @@ export class AirConditionerPlatformAccessory {
         this.accessory.removeService(displaySwitchService);
       }
     }
+
+    // Add Humidity Sensor Service
+    this.humidityService =
+      this.accessory.getService(this.platform.Service.HumiditySensor) ||
+      this.accessory.addService(this.platform.Service.HumiditySensor, 'Humidity Sensor', `humidity-${accessory.context.device.deviceId}`);
+
+    this.humidityService.setCharacteristic(this.platform.Characteristic.Name, 'Humidity Sensor');
+    // Set up characteristics for humidity
+    this.humidityService.getCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity)
+      .onGet(this.handleCurrentHumidityGet.bind(this));
+  }
+
+  // Handler for getting current humidity value
+  private async handleCurrentHumidityGet(): Promise<CharacteristicValue> {
+    this.platform.log.debug('Triggered GET CurrentHumidity');
+
+    const deviceStatus = await this.getDeviceStatus();
+    const humidity = deviceStatus.relativeHumidityMeasurement?.humidity?.value;
+
+    if (humidity === undefined) {
+      this.platform.log.error('Humidity value is undefined');
+      return 0; // Return default or fallback value
+    }
+
+    return humidity;
   }
 
   private async handleWindFreeSwitchGet(): Promise<CharacteristicValue> {

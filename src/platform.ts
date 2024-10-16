@@ -51,8 +51,12 @@ export class HomebridgePlatform implements DynamicPlatformPlugin {
 
       this.log.debug('Discovered device:', device.label, capabilities);
 
-      if (!this.doesDeviceSupportCapabilities(capabilities)) {
-        this.log.warn('Device has unsupported capabilities:', device.label);
+      if (capabilities.includes('relativeHumidityMeasurement')) {
+        this.log.debug('Device supports humidity measurement:', device.label);
+      }
+
+      if (!capabilities.includes('relativeHumidityMeasurement')) {
+        this.log.warn('Device does not support humidity measurement:', device.label);
         continue;
       }
 
@@ -79,7 +83,7 @@ export class HomebridgePlatform implements DynamicPlatformPlugin {
   doesDeviceSupportCapabilities(capabilities: string[]): boolean {
     const supportedCapabilities = AirConditionerPlatformAccessory.supportedCapabilities;
 
-    return supportedCapabilities.every(capability => {
+    return supportedCapabilities.some(capability => {
       this.log.debug('Checking if device supports capability:', capability);
 
       return capabilities.includes(capability);
