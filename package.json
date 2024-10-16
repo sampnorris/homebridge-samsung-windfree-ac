@@ -1,6 +1,6 @@
 {
-  "displayName": "Homebridge Samsung WindFree AC",
-  "name": "homebridge-samsung-windfree-ac",
+  "displayName": "Sam's Samsung WindFree AC",
+  "name": "homebridge-sams-ung-windfree-ac",
   "version": "1.1.0",
   "description": "Homebridge plugin for Samsung WindFree AC.",
   "license": "Apache-2.0",
